@@ -1,0 +1,66 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mathsweave}[2020/05/03 MathSweave]
+
+\RequirePackage{newfile}
+\RequirePackage{environ}
+\RequirePackage{mmacells}
+\RequirePackage{xstring}
+
+\ProcessOptions\relax
+
+\def\EscapeStr#1{%
+    \StrSubstitute{#1}{XY}{$\to$}}
+
+\newoutputstream{math}
+\openoutputfile{\jobname.m}{math}
+\addtostream{math}{%
+Needs@"CellsToTeX`"^^J%
+PrependTo[$ContextPath, "CellsToTeX`Configuration`"];^^J%
+TeXCells[input_] := ^^J%
+  With[{output = Evaluate[ToExpression[input]]}, ^^J%
+   CellToTeX[input, Style -> "Input"] <> "^^J^^J" <> ^^J%
+   Quiet[Check[CellToTeX[ToBoxes[output], Style -> "Output"], 
+   CellToTeX[ToBoxes[output], 
+    "Processor" -> 
+     Composition[trackCellIndexProcessor, mmaCellGraphicsProcessor, 
+      exportProcessor, cellLabelProcessor, 
+      extractCellOptionsProcessor], Style -> "Output"]]]];^^J%
+^^J%
+Run["rm *.mtex"]; Run["del *.mtex"];^^J%
+Run["rm *.pdf"]; Run["del *.pdf"];^^J%
+UsingFrontEnd[^^J%
+}
+
+\makeatletter
+\def\write@mma#1{
+    \newoutputstream{tempmath-\themma}
+    \openoutputfile{\jobname-\themma.m}{tempmath-\themma}
+    \addtostream{tempmath-\themma}{%
+#1%
+}
+    \closeoutputstream{tempmath-\themma}
+}
+
+\newcounter{mma}
+\newenvironment{mma}{
+    \refstepcounter{mma}
+    \IfFileExists{\jobname-\themma.mtex}{\input{\jobname-\themma.mtex}}{}
+    \addtostream{math}{%
+WriteString[File["\jobname-\themma.mtex"], TeXCells[
+    MathLink`CallFrontEnd[
+        FrontEnd`UndocumentedTestFEParserPacket[
+            StringTrim[ReadString["\jobname-\themma.m"]], False
+        ]
+    ][[1]]]
+];
+    }
+    \begingroup
+    \catcode13=12
+    \catcode`   =12
+    \Collect@Body\write@mma%
+}{%
+\endgroup
+}
+\makeatother
+
+\AtEndDocument{\addtostream{math}{]}}

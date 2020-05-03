@@ -1,0 +1,134 @@
+\documentclass{article}
+
+\usepackage[margin=1in]{geometry}
+
+\usepackage{mathsweave}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+\definecolor{verylightgray}{rgb}{0.96,0.97,0.98}
+\definecolor{lightgray}{rgb}{0.8,0.8,0.8}
+
+\newcommand{\codePadding}{8pt}
+
+\lstnewenvironment{texsource}{
+  \lstset{
+    % Language and syntax highlighting
+    language=[LaTeX]TeX,
+    commentstyle=\color{pgreen},
+    keywordstyle=\color{pblue},
+    stringstyle=\color{pred},
+    moredelim=[il][\textcolor{pgrey}]{$$},
+    moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%},
+    % Configure font size, 
+    basicstyle=\ttfamily,
+    numbers=left,
+    stepnumber=1,
+    numberstyle=\footnotesize,
+    xleftmargin=\codePadding{},
+    framexleftmargin=\codePadding{},
+    framextopmargin=6pt,
+    framexbottommargin=6pt, 
+    frame=tb,
+    rulecolor=\color{lightgray},
+    showspaces=false,
+    backgroundcolor=\color{verylightgray},
+    showtabs=false,
+    breaklines=true,
+    showstringspaces=false,
+    breakatwhitespace=true,
+    % Padding above and below frame.
+    aboveskip=1.5em
+  }
+}{}
+
+\title{MathSweave v0.1}
+\author{Ross Dempsey}
+\date{\today}
+
+\setlength{\parskip}{.1in}
+\setlength{\parindent}{0in}
+
+\begin{document}
+
+\maketitle
+
+MathSweave (or MathsWeave, in British English) allows Mathematica code and its output to be embedded directly into \LaTeX\ source.
+
+\section{Installation}
+
+Put \texttt{mathsweave.sty} and its dependency \texttt{mmacells.sty} where \LaTeX\ can see them (an easy short-term solution is to put them in the same directory as your main \texttt{.tex} file). To compile your document, use
+\begin{center}
+    \texttt{pdflatex}$\to$\texttt{mathematica}$\to$\texttt{pdflatex}$\to$\texttt{pdflatex}.
+\end{center}
+This is the same pattern as for using other external programs, e.g., \texttt{bibtex}.
+
+More specifically, when you run \texttt{pdflatex job.tex} the first time, \LaTeX will produce \texttt{job.m} (along with other dependencies). You should run \texttt{math -script job.m} before re-running \texttt{pdflatex} twice.
+
+You will need the \texttt{CellsToTeX} package installed in Mathematica. Instructions for this are \href{https://github.com/jkuczm/MathematicaCellsToTeX}{here}.
+
+\section{Usage}
+
+Currently MathSweave provides a single environment, \texttt{mma}, in which you can write Mathematica code. The output will be this code along with the expression it evaluates to, formatted as Mathematica cells.
+
+For example, the source
+\begin{texsource}
+    \begin{mma}
+        Sum[1/n^2, {n,1,Infinity}]
+    \end{mma}
+\end{texsource}
+produces the following output:
+
+\begin{mma}
+    Sum[n^(-2), {n,1,Infinity}]
+\end{mma}
+
+You can run any Mathematica code this way. For example,
+\begin{mma}
+    Table[Integrate[x^n,x], {n, 0, 5}]
+\end{mma}
+
+If you have more complicated code, you can enter multi-line input and it will appear faithfully, tabs and all, in the input cell. The exception is when a line break is forced by the width of the page.
+\begin{mma}
+EulerIntegrate[f_, a_, b_, n_] := With[{dx = (b-a)/n},
+    Total[
+        Table[
+            N[f[x] dx], {x, Drop[Subdivide[a, b, n],-1]}
+        ]
+    ]
+];
+NumberForm[#, 5]&/@Table[EulerIntegrate[Log, 1, E, n], {n, {10, 100, 1000, 10000}}]//TableForm
+\end{mma}
+
+In each of the examples above, the output is formatted in \LaTeX and can be highlighted and copied as text. When the output is graphical, or otherwise fails to be formatted as text, MathSweave will attempt to export the output to a pdf and embed this. For example, MathSweave can include plots in this way.
+\begin{mma}
+f[x_] := (x+2)^2(x-2)^2;
+Plot[f[x],{x,-3,3}]
+\end{mma}
+
+\begin{mma}
+ContourPlot[x^2-y^2,{x,-1,1},{y,-1,1},ImageSize->Small]
+\end{mma}
+
+All of your input is written to files and then imported into the main Mathematica script. The main script will manipulate your code as a string, but any strings in your code are properly escaped so you don't have to worry about this.
+\begin{mma}
+    GeoGraphics["World", GeoBackground -> "CountryBorders"]
+\end{mma}
+
+\section{Known Bugs and Limitations}
+
+\begin{itemize}
+    \item MathSweave only captures the result of \emph{evaluating} the input code. Messages or \texttt{Print} statements will be lost. For example,
+    \begin{mma}
+        Print["Hello world!"]
+    \end{mma}
+    \item For some reason, \texttt{\#} in LaTeX becomes \texttt{\#\#} when it is written out into a Mathematica script.
+    \item Some functions which were introduced in recent versions of Mathematica are not properly syntax-highlighted.
+    \item All Mathematica code has to appear in the \texttt{mma} environment. In the future there will be a way of silently executing Mathematica code, so that not all code and output has to be printed to the document, or to only display the output, so that (for example) Mathematica can be used to generate a figure without having to show the code.
+\end{itemize}
+
+\end{document}

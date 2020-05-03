@@ -1,0 +1,9 @@
+.vscode/settings.json
+*.aux
+*.log
+*.out
+*.synctex
+*.synctex.gz
+*.m
+*.mtex
+*.pdf
