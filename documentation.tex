@@ -67,7 +67,7 @@ Put \texttt{mathsweave.sty} and its dependency \texttt{mmacells.sty} where \LaTe
 \end{center}
 This is the same pattern as for using other external programs, e.g., \texttt{bibtex}.
 
-More specifically, when you run \texttt{pdflatex job.tex} the first time, \LaTeX will produce \texttt{job.m} (along with other dependencies). You should run \texttt{math -script job.m} before re-running \texttt{pdflatex} twice.
+More specifically, when you run \texttt{pdflatex job.tex} the first time, \LaTeX\ will produce \texttt{job.m} (along with other dependencies). You should run \texttt{math -script job.m} before re-running \texttt{pdflatex} twice.
 
 You will need the \texttt{CellsToTeX} package installed in Mathematica. Instructions for this are \href{https://github.com/jkuczm/MathematicaCellsToTeX}{here}.
 
@@ -104,7 +104,7 @@ EulerIntegrate[f_, a_, b_, n_] := With[{dx = (b-a)/n},
 NumberForm[#, 5]&/@Table[EulerIntegrate[Log, 1, E, n], {n, {10, 100, 1000, 10000}}]//TableForm
 \end{mma}
 
-In each of the examples above, the output is formatted in \LaTeX and can be highlighted and copied as text. When the output is graphical, or otherwise fails to be formatted as text, MathSweave will attempt to export the output to a pdf and embed this. For example, MathSweave can include plots in this way.
+In each of the examples above, the output is formatted in \LaTeX\ and can be highlighted and copied as text. When the output is graphical, or otherwise fails to be formatted as text, MathSweave will attempt to export the output to a pdf and embed this. For example, MathSweave can include plots in this way.
 \begin{mma}
 f[x_] := (x+2)^2(x-2)^2;
 Plot[f[x],{x,-3,3}]
@@ -126,7 +126,8 @@ All of your input is written to files and then imported into the main Mathematic
     \begin{mma}
         Print["Hello world!"]
     \end{mma}
-    \item For some reason, \texttt{\#} in LaTeX becomes \texttt{\#\#} when it is written out into a Mathematica script.
+    \item The Mathematica script has to connect to a FrontEnd kernel in order to parse the code. Occasionally this fails, in which case you should clear auxiliary files and try again.
+    \item If any of your Mathematica code has a syntax error, behavior is undefined. Hopefully it will fail gracefully and produce a \texttt{\$Failed} message for only that cell, but no promises.
     \item Some functions which were introduced in recent versions of Mathematica are not properly syntax-highlighted.
     \item All Mathematica code has to appear in the \texttt{mma} environment. In the future there will be a way of silently executing Mathematica code, so that not all code and output has to be printed to the document, or to only display the output, so that (for example) Mathematica can be used to generate a figure without having to show the code.
 \end{itemize}

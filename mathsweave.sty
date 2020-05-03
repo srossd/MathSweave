@@ -8,9 +8,6 @@
 
 \ProcessOptions\relax
 
-\def\EscapeStr#1{%
-    \StrSubstitute{#1}{XY}{$\to$}}
-
 \newoutputstream{math}
 \openoutputfile{\jobname.m}{math}
 \addtostream{math}{%
@@ -35,6 +32,7 @@ UsingFrontEnd[^^J%
 \def\write@mma#1{
     \newoutputstream{tempmath-\themma}
     \openoutputfile{\jobname-\themma.m}{tempmath-\themma}
+    \catcode35=6
     \addtostream{tempmath-\themma}{%
 #1%
 }
@@ -57,6 +55,7 @@ WriteString[File["\jobname-\themma.mtex"], TeXCells[
     \begingroup
     \catcode13=12
     \catcode`   =12
+    \catcode35=12
     \Collect@Body\write@mma%
 }{%
 \endgroup
